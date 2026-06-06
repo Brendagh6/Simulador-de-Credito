@@ -1,27 +1,141 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Plataforma de Simulación de Crédito</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Crédito Personal y Top Up</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
     <div class="container">
-      <h1>Simulador de Crédito Personal</h1>
-      <form id="credit-form">
-        <label for="monto">Monto del Crédito Solicitado ($):</label>
-        <input type="number" id="monto" value="150000" required />
-        <label for="tasa">Tasa de Interés Anual Ordinaria (%):</label>
-        <input type="number" id="tasa" value="34" step="0.1" required />
-        <label for="plazo">Plazo del Financiamiento (Meses):</label>
-        <select id="plazo">
-          <option value="12">12 meses</option>
-          <option value="24">24 meses</option>
-          <option value="36">36 meses</option>
-          <option value="48" selected>48 meses</option>
-        </select>
-      </form>
+        <div class="app-header">
+            <div class="logo-area">
+                <span class="logo-main">Bren</span><span class="logo-sub">Finance</span>
+            </div>
+            <span class="header-title">SISTEMA DE SIMULACIÓN: CRÉDITO PERSONAL </span>
+        </div>
+
+        <div class="card" id="sec-formulario">
+            <div class="card-header">DATOS DEL CRÉDITO</div>
+            <form id="credit-form" onsubmit="event.preventDefault();">
+                <label for="nombre">Nombre del cliente:</label>
+                <input type="text" placeholder="Ingrese el nombre del cliente" id="nombre" value="" class="input-yellow" required>
+
+                <label for="monto">Monto autorizado:</label>
+                <input type="number" placeholder="Ingrese el monto autorizado" id="monto" value="" class="input-yellow" required>
+
+                <label for="comision_pct">Comisión por apertura con IVA:</label>
+                <div class="input-group">
+                    <select id="comision_pct">
+                        <option value="0">0% (Top Up)</option>
+                        <option value="1" selected>1%</option>
+                        <option value="2">2%</option>
+                        <option value="3">3%</option>
+                    </select>
+                    <span class="display-value" id="out-comision-monto">$0.00</span>
+                </div>
+
+                <label for="total_financiar">Total a financiar:</label>
+                <input type="text" id="total_financiar" readonly class="input-readonly">
+
+                <label for="plazo">Plazo del crédito:</label>
+                <select id="plazo">
+                    <option value="12">12 meses</option>
+                    <option value="24">24 meses</option>
+                    <option value="36" selected>36 meses</option>
+                    <option value="48">48 meses</option>
+                    <option value="60">60 meses</option>
+                </select>
+
+                <label for="tasa">Tasa de interés anual:</label>
+                <select id="tasa">
+                    <option value="20">20%</option>
+                    <option value="25" selected>25%</option>
+                    <option value="30">30%</option>
+                    <option value="34">34%</option>
+                </select>
+
+                <label for="cat">CAT (Costo Anual Total):</label>
+                <input type="number" id="cat" value="29.0" step="0.1">
+
+                <label>Pago por mil:</label>
+                <span class="display-value-bold" id="out-pago-mil">$0.00</span>
+
+                <div class="form-actions">
+                    <button type="button" id="btn-cotizar" class="btn-action btn-main">Cotiza</button>
+                    <button type="button" id="btn-limpiar" class="btn-action btn-clear">Limpiar</button>
+                </div>
+            </form>
+            <div class="info-banner">
+                <p>• Campos amarillos son para captura de datos.<br>• Recuerda que Top Up no cobra comisión por apertura (0%).</p>
+            </div>
+        </div>
+
+        <div class="card hidden" id="sec-lineas">
+            <div class="card-header">SELECCIÓN DE LÍNEA DE CRÉDITO</div>
+            <p class="instruction-text">Selecciona una de las alternativas de financiamiento para desplegar su tabla:</p>
+            
+            <div class="lines-grid">
+                <div class="line-card" data-pct="1.0" id="card-l100">
+                    <div class="line-percentage">Línea al 100%</div>
+                    <div class="line-amount" id="l100-monto">$0.00</div>
+                    <div class="line-pay" id="l100-pago">Pago mensual apróx: --</div>
+                </div>
+                <div class="line-card" data-pct="0.8" id="card-l80">
+                    <div class="line-percentage">Línea al 80%</div>
+                    <div class="line-amount" id="l80-monto">$0.00</div>
+                    <div class="line-pay" id="l80-pago">Pago mensual apróx: --</div>
+                </div>
+                <div class="line-card" data-pct="0.5" id="card-l50">
+                    <div class="line-percentage">Línea al 50%</div>
+                    <div class="line-amount" id="l50-monto">$0.00</div>
+                    <div class="line-pay" id="l50-pago">Pago mensual apróx: --</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card hidden" id="sec-tabla">
+            <div class="card-header">COTIZACIÓN DE CRÉDITO</div>
+            
+            <div class="report-summary">
+                <div class="summary-col">
+                    <p><strong>Nombre del cliente:</strong> <span id="rep-cliente"></span></p>
+                    <p><strong>Plazo:</strong> <span id="rep-plazo"></span> meses</p>
+                    <p><strong>Tasa de interés:</strong> <span id="rep-tasa"></span>% Anual</p>
+                </div>
+                <div class="summary-col">
+                    <p><strong>Monto a financiar:</strong> <span id="rep-monto"></span></p>
+                    <p><strong>Comisión por apertura con IVA:</strong> <span id="rep-comision"></span></p>
+                    <p><strong>Total a financiar:</strong> <span id="rep-total"></span></p>
+                </div>
+                <div class="summary-col text-right">
+                    <p><strong>Pago por mil:</strong> <span id="rep-pagomil"></span></p>
+                    <p><strong>CAT (Costo Anual Total):</strong> <span id="rep-cat"></span>%</p>
+                    <p class="date-stamp">Fecha de elaboración: <span id="rep-fecha"></span></p>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="tabla-amortizacion">
+                    <thead>
+                        <tr>
+                            <th>Mes</th>
+                            <th>Saldo de Capital</th>
+                            <th>Pago a Capital</th>
+                            <th>Pago de Interés Ordinarios</th>
+                            <th>Pago Fijo Mensual</th>
+                            <th>Pago IVA Intereses</th>
+                            <th>Pago Mensual Total</th>
+                            <th>Prepagos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-  </body>
+    
+    <script src="script.js"></script>
+</body>
 </html>
